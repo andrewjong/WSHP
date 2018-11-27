@@ -12,6 +12,7 @@ import sys
 import time
 
 from PIL import Image
+from tqdm import tqdm_notebook as tqdm
 
 import tensorflow as tf
 import numpy as np
@@ -116,7 +117,7 @@ def main():
     if not os.path.exists(args.save_dir):
       os.makedirs(args.save_dir)
     # Perform inference.
-    for step in range(num_steps):
+    for step in tqdm(range(num_steps), desc="Inference progress", unit="img"):
         preds, jpg_path = sess.run([pred, title])
         msk = decode_labels(preds, num_classes=args.num_classes)
         im = Image.fromarray(msk[0])
@@ -126,7 +127,7 @@ def main():
         img[img>255] = 255
         img = Image.fromarray(np.uint8(img))
         img.save(args.save_dir + jpg_path + '.png')
-        print('Image processed {}.png'.format(jpg_path))
+        # print('Image processed {}.png'.format(jpg_path))
     
     total_time = time.time() - start_time
     print('The output files have been saved to {}'.format(args.save_dir))
