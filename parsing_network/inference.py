@@ -119,7 +119,8 @@ def main():
     if not os.path.exists(args.save_dir):
       os.makedirs(args.save_dir)
     # Perform inference.
-    for step in trange(num_steps, desc="Inference progress", unit="img"):
+    t = trange(num_steps, desc="Inference progress", unit="img"):
+    for step in t
         preds, jpg_path = sess.run([pred, title])
         msk = decode_labels(preds, num_classes=args.num_classes)
         # the mask
@@ -127,6 +128,7 @@ def main():
         # save the mask
         jpg_path = str(jpg_path).split('/')[-1].split('.')[0]
         im.save(os.path.join(args.save_dir, jpg_path + '.png'))
+        t.set_description("Finished" + jpg_path)
 
         # AJ: We want to save only the mask, not the background. therefore we commented out below
 
