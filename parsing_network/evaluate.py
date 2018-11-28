@@ -4,7 +4,7 @@
 This script evaluates the model on 1449 validation images.
 """
 
-from __future__ import print_function
+
 
 import argparse
 from datetime import datetime
@@ -56,7 +56,7 @@ def load(saver, sess, ckpt_path):
       ckpt_path: path to checkpoint file with parameters.
     ''' 
     saver.restore(sess, ckpt_path)
-    print("Restored model parameters from {}".format(ckpt_path))
+    print(("Restored model parameters from {}".format(ckpt_path)))
 
 def main():
     """Create the model and start the evaluation process."""
@@ -118,8 +118,8 @@ def main():
     for step in range(args.num_steps):
         preds, _ = sess.run([pred, update_op])
         if step % 100 == 0:
-            print('step {:d}'.format(step))
-    print('Mean IoU: {:.3f}'.format(mIoU.eval(session=sess)))
+            print(('step {:d}'.format(step)))
+    print(('Mean IoU: {:.3f}'.format(mIoU.eval(session=sess))))
     coord.request_stop()
     coord.join(threads)
     

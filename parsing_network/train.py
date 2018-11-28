@@ -5,7 +5,7 @@ This script trains the model using augmented PASCAL VOC,
 which contains approximately 10000 images for training and 1500 images for validation.
 """
 
-from __future__ import print_function
+
 
 import argparse
 from datetime import datetime
@@ -113,7 +113,7 @@ def load(saver, sess, ckpt_path):
       ckpt_path: path to checkpoint file with parameters.
     ''' 
     saver.restore(sess, ckpt_path)
-    print("Restored model parameters from {}".format(ckpt_path))
+    print(("Restored model parameters from {}".format(ckpt_path)))
 
 def file_len(fname):
     with open(fname) as f:
@@ -125,10 +125,10 @@ def main():
     """Create the model and start the training."""
     args = get_arguments()
     
-    h, w = map(int, args.input_size.split(','))
+    h, w = list(map(int, args.input_size.split(',')))
     input_size = (h, w)
     num_steps = int(file_len(args.data_list) * args.num_epochs / args.batch_size)
-    print('Total number of steps is '+str(num_steps))
+    print(('Total number of steps is '+str(num_steps)))
     tf.set_random_seed(args.random_seed)
     
     # Create queue coordinator.
@@ -146,8 +146,8 @@ def main():
             IMG_MEAN,
             coord)
         image_batch, label_batch = reader.dequeue(args.batch_size)
-    print(args.random_scale,
-            args.random_mirror)
+    print((args.random_scale,
+            args.random_mirror))
     # Create network.
     net = DeepLabResNetModel({'data': image_batch}, is_training=args.is_training, num_classes=args.num_classes)
     # For a small batch size, it is better to keep 
@@ -218,9 +218,9 @@ def main():
     grads_fc_w = grads[len(conv_trainable) : (len(conv_trainable) + len(fc_w_trainable))]
     grads_fc_b = grads[(len(conv_trainable) + len(fc_w_trainable)):]
 
-    train_op_conv = opt_conv.apply_gradients(zip(grads_conv, conv_trainable))
-    train_op_fc_w = opt_fc_w.apply_gradients(zip(grads_fc_w, fc_w_trainable))
-    train_op_fc_b = opt_fc_b.apply_gradients(zip(grads_fc_b, fc_b_trainable))
+    train_op_conv = opt_conv.apply_gradients(list(zip(grads_conv, conv_trainable)))
+    train_op_fc_w = opt_fc_w.apply_gradients(list(zip(grads_fc_w, fc_w_trainable)))
+    train_op_fc_b = opt_fc_b.apply_gradients(list(zip(grads_fc_b, fc_b_trainable)))
 
     train_op = tf.group(train_op_conv, train_op_fc_w, train_op_fc_b)
     
@@ -256,7 +256,7 @@ def main():
         else:
             loss_value, _ = sess.run([reduced_loss, train_op], feed_dict=feed_dict)
         duration = time.time() - start_time
-        print('step {:d} \t loss = {:.3f} , ({:.3f} sec/step)'.format(step, loss_value, duration))
+        print(('step {:d} \t loss = {:.3f} , ({:.3f} sec/step)'.format(step, loss_value, duration)))
     coord.request_stop()
     coord.join(threads)
     

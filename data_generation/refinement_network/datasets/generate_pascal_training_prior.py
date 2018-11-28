@@ -26,7 +26,7 @@ if not os.path.exists(opt.outputDir):
 
 for i in range(len(pascal_img_names)):
     pascal_name = pascal_img_names[i]
-    print('processing', pascal_name)
+    print(('processing', pascal_name))
     pascal_mask_img = cv2.imread(os.path.join(opt.PASCALMaskImgDir, pascal_name + ".png"), 0)
     if not os.path.exists(os.path.join(opt.outputDir, pascal_name)):
         os.makedirs(os.path.join(opt.outputDir, pascal_name))
@@ -35,4 +35,4 @@ for i in range(len(pascal_img_names)):
         pascal_img_names, pascal_pose_dict, opt.n, opt.k, exclude_self=True, save_dir=os.path.join(opt.outputDir, pascal_name))
     pascal_average_parsing = pascal_average_parsing[:, :, [2, 1, 0]]
     cv2.imwrite(os.path.join(opt.outputDir, pascal_name + ".png"), pascal_average_parsing)
-    print(pascal_name, i)
+    print((pascal_name, i))

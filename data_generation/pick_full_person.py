@@ -41,10 +41,10 @@ if __name__ == '__main__':
     result3={}
     with open(jsonpath) as f:
         rmpe_results = json.load(f)
-    for imgname in tqdm(rmpe_results.keys()):
+    for imgname in tqdm(list(rmpe_results.keys())):
         if filter_pose(inputpath, outputpath, imgname):
             for pid in range(len(rmpe_results[imgname])):
-                if imgname not in result3.keys():
+                if imgname not in list(result3.keys()):
                     result3[imgname]={}
                     result3[imgname]['version']=0.1
                     result3[imgname]['bodies']=[]

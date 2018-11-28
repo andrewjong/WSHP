@@ -1,6 +1,6 @@
 def create_model(opt):
     model = None
-    print(opt.model)
+    print((opt.model))
     if opt.model == 'pix2pix':
         assert(opt.dataset_mode.find('aligned') != -1)
         from .pix2pix_model import Pix2PixModel
@@ -12,5 +12,5 @@ def create_model(opt):
     else:
         raise ValueError("Model [%s] not recognized." % opt.model)
     model.initialize(opt)
-    print("model [%s] was created" % (model.name()))
+    print(("model [%s] was created" % (model.name())))
     return model

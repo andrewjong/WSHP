@@ -3,7 +3,7 @@
 This script computes a segmentation mask for a given image.
 """
 
-from __future__ import print_function
+
 
 import argparse
 from datetime import datetime
@@ -26,6 +26,8 @@ IMG_MEAN = np.array((104.00698793,116.66876762,122.67891434), dtype=np.float32)
 NUM_CLASSES = 7
 DATA_LIST = './dataset/dance.txt'
 SAVE_DIR = './output/'
+
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
 
 def get_arguments():
     """Parse all the arguments provided from the CLI.
@@ -55,7 +57,7 @@ def load(saver, sess, ckpt_path):
       ckpt_path: path to checkpoint file with parameters.
     ''' 
     saver.restore(sess, ckpt_path)
-    print("Restored model parameters from {}".format(ckpt_path))
+    print(("Restored model parameters from {}".format(ckpt_path)))
 
 def file_len(fname):
     with open(fname) as f:
@@ -120,18 +122,28 @@ def main():
     for step in trange(num_steps, desc="Inference progress", unit="img"):
         preds, jpg_path = sess.run([pred, title])
         msk = decode_labels(preds, num_classes=args.num_classes)
+        # the mask
         im = Image.fromarray(msk[0])
-        img_o = Image.open(jpg_path)
-        jpg_path = jpg_path.split('/')[-1].split('.')[0]
-        img = np.array(im)*0.9 + np.array(img_o)*0.7
-        img[img>255] = 255
-        img = Image.fromarray(np.uint8(img))
-        img.save(args.save_dir + jpg_path + '.png')
-        # print('Image processed {}.png'.format(jpg_path))
+        # save the mask
+        jpg_path = str(jpg_path).split('/')[-1].split('.')[0]
+        im.save(os.path.join(args.save_dir, jpg_path + '.png'))
+
+        # AJ: We want to save only the mask, not the background. therefore we commented out below
+
+        # # the original image
+        # img_o = Image.open(jpg_path)
+        # jpg_path = jpg_path.split('/')[-1].split('.')[0]
+        # # create the final result using the mask and the original
+        # img = np.array(im)*0.9 + np.array(img_o)*0.7
+        # # clip surpassed colors
+        # img[img>255] = 255
+        # img = Image.fromarray(np.uint8(img))
+        # img.save(args.save_dir + jpg_path + '.png')
+        # # print('Image processed {}.png'.format(jpg_path))
     
     total_time = time.time() - start_time
-    print('The output files have been saved to {}'.format(args.save_dir))
-    print('It took {} sec on each image.'.format(total_time/num_steps))
+    print(('The output files have been saved to {}'.format(args.save_dir)))
+    print(('It took {} sec on each image.'.format(total_time/num_steps)))
     
 if __name__ == '__main__':
     main()

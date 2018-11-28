@@ -121,7 +121,7 @@ def drawSkeleton(img, pose):
     for i in range(len(skeletonLines)):
         a = skeletonLines[i][0]
         b = skeletonLines[i][1]
-        cv2.line(retImg, (int(pose[a*2]), int(pose[a*2+1])), (int(pose[b*2]), int(pose[b*2+1])), list(map(lambda i: i*0.6, colorDict[skeletonColor[i]])), 3)
+        cv2.line(retImg, (int(pose[a*2]), int(pose[a*2+1])), (int(pose[b*2]), int(pose[b*2+1])), list([i*0.6 for i in colorDict[skeletonColor[i]]]), 3)
     return retImg
 
 
@@ -437,7 +437,7 @@ def generate_prior_single_person(bbox, raw_pose, PASCALMaskImgDir, pascal_poses,
             continue
         pascal_name = pascal_img_names[distance_index[j]]
         # get PASCAL mask img and morph
-        print(j, 'picked pascal', pascal_name)
+        print((j, 'picked pascal', pascal_name))
         pascal_mask_img = cv2.imread(os.path.join(PASCALMaskImgDir, pascal_name + ".png"), 0)
         # cv2.imwrite(os.path.join(save_dir, 'origin_' + str(j) + '_' + pascal_name + '.png'), paint(pascal_mask_img))
         pascal_pose = pascal_pose_dict[pascal_name][0]

@@ -35,7 +35,7 @@ for i, data in enumerate(dataset):
     for key in save_list:
         visuals_selected[key] = visuals[key]
     img_path = model.get_image_paths()
-    print('%04d: process image... %s' % (i, img_path))
+    print(('%04d: process image... %s' % (i, img_path)))
     visualizer.save_images(webpage, visuals_selected, img_path, aspect_ratio=opt.aspect_ratio)
 
 webpage.save()

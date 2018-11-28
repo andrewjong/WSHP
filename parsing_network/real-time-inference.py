@@ -35,7 +35,7 @@ def load(saver, sess, ckpt_path):
       ckpt_path: path to checkpoint file with parameters.
     ''' 
     saver.restore(sess, ckpt_path)
-    print("Restored model parameters from {}".format(ckpt_path))
+    print(("Restored model parameters from {}".format(ckpt_path)))
 
 args = get_arguments()
 
@@ -72,7 +72,7 @@ def process_frame(frame):
     start_time = time.time()
     preds = sess.run(pred, feed_dict={img_tf: input_img_feed})
     elapsed_time = time.time() - start_time
-    print("FPS: ", 1 / elapsed_time)
+    print(("FPS: ", 1 / elapsed_time))
     msk = decode_labels(preds, num_classes=NUM_CLASSES)
     im = msk[0]
     final = cv2.addWeighted(im,0.9,frame,0.7,0)

@@ -36,7 +36,7 @@ coco2pascal = [9, 8, 12, 11, 10, 13, 14, 15, 2, 1, 0, 3, 4, 5, 7]
 # the 6th keypoint is missing in coco
 
 num_images = 0
-for k, v in json_dict.items():
+for k, v in list(json_dict.items()):
     num_images += 1
     image_id = k
     origin_img = cv2.imread(os.path.join(origin_img_root, image_id))
@@ -69,8 +69,8 @@ for k, v in json_dict.items():
         raw_pose[0][2*6] = (raw_pose[0][2*2] + raw_pose[0][2*3]) / 2
         raw_pose[0][2*6+1] = (raw_pose[0][2*2+1] + raw_pose[0][2*3+1]) / 2
         if max_x > origin_img.shape[1] or max_y > origin_img.shape[0]-1:
-            print(max_x, max_y)
-            print(image_id + " pose outside img")
+            print((max_x, max_y))
+            print((image_id + " pose outside img"))
 
         # deal with bbox
         bbox = [min_x, min_y, max_x, max_y]
@@ -80,13 +80,13 @@ for k, v in json_dict.items():
         bbox[1] = max(bbox[1] - yaug, 0)
         bbox[2] = min(bbox[2] + xaug, origin_img.shape[1]-1)
         bbox[3] = min(bbox[3] + yaug, origin_img.shape[0]-1)
-        print('bbox', bbox)
+        print(('bbox', bbox))
 
         prior = cv2.imread(os.path.join(parsing_root, image_id.split('.')[0] + '_' + str(i) + '_fake_B_postprocessed.png'))
         prior = cv2.resize(prior, (bbox[2]+1-bbox[0], bbox[3]+1-bbox[1]), interpolation=cv2.INTER_NEAREST)
         all_prior[bbox[1]:bbox[3]+1, bbox[0]:bbox[2]+1] = np.maximum(all_prior[bbox[1]:bbox[3]+1, bbox[0]:bbox[2]+1], prior)
 
-        print(image_id, i, num_images)
+        print((image_id, i, num_images))
     # all_prior = all_prior + (all_prior == 0) * 255
     cv2.imwrite(os.path.join(opt.outputDir, image_id[:len(image_id)-3]+'png'), all_prior[:, :, 0])
 

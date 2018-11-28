@@ -28,10 +28,10 @@ origin_img_root = opt.origin_img_root
 json_file = open(json_file_root, "r")
 json_string = json_file.readline()
 json_dict = json.loads(json_string)
-print('length of json_dict', len(json_dict))
+print(('length of json_dict', len(json_dict)))
 
 pascal_poses, pascal_img_names, pascal_pose_dict = load_pascal_pose(opt.PASCALPoseFileRoot)
-print('length of pascal_img', len(pascal_img_names))
+print(('length of pascal_img', len(pascal_img_names)))
 
 if not os.path.exists(opt.outputDir):
     os.makedirs(opt.outputDir)
@@ -52,7 +52,7 @@ alphapose2pascal = [9, 8, 12, 11, 10, 13, 14, 15, 2, 1, 0, 3, 4, 5, 7]
 # the 6th keypoint is missing
 
 num_images = 0
-for k, v in json_dict.items():
+for k, v in list(json_dict.items()):
     num_images += 1
     image_id = k
     origin_img = cv2.imread(os.path.join(origin_img_root, image_id))
@@ -81,8 +81,8 @@ for k, v in json_dict.items():
         raw_pose[0][2*6] = (raw_pose[0][2*2] + raw_pose[0][2*3]) / 2
         raw_pose[0][2*6+1] = (raw_pose[0][2*2+1] + raw_pose[0][2*3+1]) / 2
         if max_x > origin_img.shape[1] or max_y > origin_img.shape[0]-1:
-            print(max_x, max_y)
-            print(image_id + " pose outside img")
+            print((max_x, max_y))
+            print((image_id + " pose outside img"))
 
         # deal with bbox
         bbox = [min_x, min_y, max_x, max_y]
@@ -92,7 +92,7 @@ for k, v in json_dict.items():
         bbox[1] = max(bbox[1] - yaug, 0)
         bbox[2] = min(bbox[2] + xaug, origin_img.shape[1]-1)
         bbox[3] = min(bbox[3] + yaug, origin_img.shape[0]-1)
-        print('bbox', bbox)
+        print(('bbox', bbox))
 
         prior = generate_prior_single_person(bbox, raw_pose, opt.PASCALMaskImgDir, pascal_poses, pascal_img_names, pascal_pose_dict, opt.n, opt.k)
         prior = prior[:, :, [2, 1, 0]]
@@ -103,6 +103,6 @@ for k, v in json_dict.items():
         cv2.imwrite(os.path.join(img_dir, image_id.split('.')[0]+'_'+str(i)+'.jpg'), img)
         cv2.imwrite(os.path.join(prior_dir, image_id.split('.')[0]+'_'+str(i)+'.jpg'), prior)
 
-        print(image_id, i, num_images)
+        print((image_id, i, num_images))
 
 print('finished')
