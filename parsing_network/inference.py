@@ -138,10 +138,22 @@ def main():
         with open(out_file, "w") as f:
             f.write("id,x1,y1,x2,y2\n")
         for i, c in enumerate((c0, c1, c2, c3, c4, c5, c6)):
-            min_x = np.min(c[:, 1])
-            min_y = np.min(c[:, 0])
-            max_x = np.max(c[:, 1])
-            max_y = np.max(c[:, 0])
+            try:
+                min_x = np.min(c[:, 1])
+            except ValueError:
+                min_x = None
+            try:
+                min_y = np.min(c[:, 0])
+            except ValueError:
+                min_y =None
+            try:
+                max_x = np.max(c[:, 1])
+            except ValueError:
+                max_x = None
+            try:
+                max_y = np.max(c[:, 0])
+            except ValueError:
+                max_y = None
             with open(out_file, "a+") as f:
                 f.write(",".join((str(i), str(min_x), str(min_y), str(max_x), str(max_y))))
                 f.write("\n")
