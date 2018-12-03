@@ -85,7 +85,7 @@ def main():
             coord)
         image, label = reader.image, reader.label
         title = reader.queue[0]
-    image_batch, label_batch = tf.expand_dims(image, dim=0), tf.expand_dims(label, dim=0) # Add one batch dimension.
+    image_batch, label_batch = tf.expand_dims(image, axis=0), tf.expand_dims(label, axis=0) # Add one batch dimension.
     
     # Create network.
     net = DeepLabResNetModel({'data': image_batch}, is_training=False, num_classes=args.num_classes)
@@ -95,9 +95,18 @@ def main():
 
     # Predictions.
     raw_output = net.layers['fc1_voc12']
-    raw_output_up = tf.image.resize_bilinear(raw_output, tf.shape(image_batch)[1:3,])
-    raw_output_up = tf.argmax(raw_output_up, dimension=3)
-    pred = tf.expand_dims(raw_output_up, dim=3)
+    before_argmax = tf.image.resize_bilinear(raw_output, tf.shape(image_batch)[1:3,])
+    raw_output_up = tf.argmax(before_argmax, axis=3)
+    pred = tf.expand_dims(raw_output_up, axis=3)
+    hw_only = pred[0,:,:,0]
+    class_0 = tf.where(tf.equal(hw_only, 0))
+    class_0_row = class_0[:, ]
+    class_1 = tf.where(tf.equal(hw_only, 1))
+    class_2 = tf.where(tf.equal(hw_only, 2))
+    class_3 = tf.where(tf.equal(hw_only, 3))
+    class_4 = tf.where(tf.equal(hw_only, 4))
+    class_5 = tf.where(tf.equal(hw_only, 5))
+    class_6 = tf.where(tf.equal(hw_only, 6))
 
     
     # Set up TF session and initialize variables. 
@@ -118,18 +127,46 @@ def main():
     start_time = time.time()
     if not os.path.exists(args.save_dir):
         os.makedirs(args.save_dir)
+
     # Perform inference.
     t = trange(num_steps, desc="Inference progress", unit="img")
     for step in t:
-        preds, jpg_path = sess.run([pred, title])
-        msk = decode_labels(preds, num_classes=args.num_classes)
-        # the mask
-        im = Image.fromarray(msk[0])
-        # save the mask
-        jpg_path = str(jpg_path).split('/')[-1].split('.')[0]
-        out = os.path.join(args.save_dir, jpg_path + '.png')
-        im.save(out)
-        t.set_description("Finished" + jpg_path)
+        jpg_path, c0, c1, c2, c3, c4, c5, c6 = sess.run([title, class_0, class_1, class_2, class_3, class_4, class_5, class_6])
+        fname = os.path.splitext(os.path.basename(str(jpg_path)))[0]
+        out_file = os.path.join(args.save_dir, fname + ".csv")
+
+        with open(out_file, "w") as f:
+            f.write("id,x1,y1,x2,y2\n")
+        for i, c in enumerate((c0, c1, c2, c3, c4, c5, c6)):
+            min_x = np.min(c[:, 1])
+            min_y = np.min(c[:, 0])
+            max_x = np.max(c[:, 1])
+            max_y = np.max(c[:, 0])
+            with open(out_file, "a+") as f:
+                f.write(",".join((str(i), str(min_x), str(min_y), str(max_x), str(max_y))))
+                f.write("\n")
+
+
+
+        # for i in range(NUM_CLASSES):
+        #     # find the occurence of i on the y axis
+        #     tf.where(preds[1]==i)
+            # find the occurence of i on the y axis reversed
+            
+            # find the occurence of i on the x axis
+            # find the occurence of i on the x axis reversed
+
+
+        # MAKE ROIS from preds. Specifically 6 of them?
+
+        # msk = decode_labels(preds, num_classes=args.num_classes)
+        # # the mask
+        # im = Image.fromarray(msk[0])
+        # # save the mask
+        # jpg_path = str(jpg_path).split('/')[-1].split('.')[0]
+        # out = os.path.join(args.save_dir, jpg_path + '.png')
+        # im.save(out)
+        # t.set_description("Finished" + jpg_path)
 
         # AJ: We want to save only the mask, not the background. therefore we commented out below
 
