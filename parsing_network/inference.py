@@ -200,7 +200,7 @@ def main():
         # jpg_path = str(jpg_path).split('/')[-1].split('.')[0]
         # out = os.path.join(args.save_dir, jpg_path + '.png')
         # im.save(out)
-        t.set_description("Finished " + jpg_path)
+        t.set_description("Finished " + fname)
 
         # AJ: We want to save only the mask, not the background. therefore we commented out below
 
