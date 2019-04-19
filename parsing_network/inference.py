@@ -3,23 +3,16 @@
 This script computes a segmentation mask for a given image.
 """
 
-
-
 import argparse
-from datetime import datetime
 import os
-import sys
 import time
 
-from PIL import Image
-from tqdm import trange
-
-import tensorflow as tf
 import numpy as np
-
-from deeplab_resnet import DeepLabResNetModel, ImageReader, decode_labels, prepare_label
-
-import pdb
+import tensorflow as tf
+from PIL import Image
+from scipy import sparse
+from deeplab_resnet import DeepLabResNetModel, ImageReader, decode_labels
+from tqdm import trange
 
 IMG_MEAN = np.array((104.00698793,116.66876762,122.67891434), dtype=np.float32)
     
@@ -95,8 +88,8 @@ def main():
 
     # Predictions.
     raw_output = net.layers['fc1_voc12']
-    raw_output_up = tf.image.resize_bilinear(raw_output, tf.shape(image_batch)[1:3,])
-    raw_output_up = tf.argmax(raw_output_up, dimension=3)
+    before_argmax = tf.image.resize_bilinear(raw_output, tf.shape(image_batch)[1:3,])
+    raw_output_up = tf.argmax(before_argmax, dimension=3)
     pred = tf.expand_dims(raw_output_up, dim=3)
 
     
@@ -121,15 +114,25 @@ def main():
     # Perform inference.
     t = trange(num_steps, desc="Inference progress", unit="img")
     for step in t:
-        preds, jpg_path = sess.run([pred, title])
-        msk = decode_labels(preds, num_classes=args.num_classes)
-        # the mask
-        im = Image.fromarray(msk[0])
-        # save the mask
+        # Compressed version
+        raw_output_up_, jpg_path = sess.run([raw_output_up, title])
+        # convert to a compressed matrix, because we have a lot of 0's for the
+        # background
+        compressed = sparse.csr_matrix(np.squeeze(raw_output_up_))
         jpg_path = str(jpg_path).split('/')[-1].split('.')[0]
-        out = os.path.join(args.save_dir, jpg_path + '.png')
-        im.save(out)
-        t.set_description("Finished" + jpg_path)
+        out = os.path.join(args.save_dir, jpg_path)
+        sparse.save_npz(out, compressed)
+
+        # # PNG version
+        # preds, jpg_path = sess.run([pred, title])
+        # msk = decode_labels(preds, num_classes=args.num_classes)
+        # # the mask
+        # im = Image.fromarray(msk[0])
+        # # save the mask
+        # jpg_path = str(jpg_path).split('/')[-1].split('.')[0]
+        # out = os.path.join(args.save_dir, jpg_path + '.png')
+        # im.save(out)
+        t.set_description("Finished " + jpg_path)
 
         # AJ: We want to save only the mask, not the background. therefore we commented out below
 

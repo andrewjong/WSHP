@@ -42,6 +42,8 @@ python evaluate.py --data-dir ./dataset/ --restore-from ./models/final_model/mod
 To perform inference over your own images, use the following command:
 ```bash
 python inference.py /path/to/img/folder /path/to/model --data_list /path/to/data/list
+
+MINE: python inference.py ../../data/$person/ models/final_model/model.ckpt-19315 --data_list $sublist --save $outdir/
 ```
 This will run the forward pass and save the renderred result at `\output` folder:
 
