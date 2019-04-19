@@ -59,6 +59,21 @@ def get_arguments():
         help="how often in steps to visualize the mask",
     )
     parser.add_argument(
+        "--no_body",
+        action="store_true",
+        help="choose not to output body segmentation compressed npz arrays",
+    )
+    parser.add_argument(
+        "--no_vis",
+        action="store_true",
+        help="choose not to output body segmentation visualizations",
+    )
+    parser.add_argument(
+        "--no_rois",
+        action="store_true",
+        help="choose not to output rois",
+    )
+    parser.add_argument(
         "--model_weights",
         default="models/final_model/model.ckpt-19315",
         type=str,
@@ -206,43 +221,44 @@ def main():
         )
 
         # == First, save the body segmentation ==
-        # convert to a 2D compressed matrix, because we have a lot of 0's for the
-        # background
-        compressed = sparse.csr_matrix(np.squeeze(raw_output_up_))
-        fname = os.path.splitext(os.path.basename(str(jpg_path)))[0]
-        out = os.path.join(args.img_path, args.body_dir, fname)
-        sparse.save_npz(out, compressed)
+        if not args.no_body:
+            # convert to a 2D compressed matrix, because we have a lot of 0's for the
+            # background
+            compressed = sparse.csr_matrix(np.squeeze(raw_output_up_))
+            fname = os.path.splitext(os.path.basename(str(jpg_path)))[0]
+            out = os.path.join(args.img_path, args.body_dir, fname)
+            sparse.save_npz(out, compressed)
 
         # == Next, save the ROIs ==
-
-        img_id = extract_nums_only(fname)
-        for c in (c0, c1, c2, c3, c4, c5, c6):
-            try:
-                min_x = np.min(c[:, 1])
-            except ValueError:
-                min_x = None
-            try:
-                min_y = np.min(c[:, 0])
-            except ValueError:
-                min_y = None
-            try:
-                max_x = np.max(c[:, 1])
-            except ValueError:
-                max_x = None
-            try:
-                max_y = np.max(c[:, 0])
-            except ValueError:
-                max_y = None
-            # write out the stuff
-            with open(rois_file, "a") as f:
-                f.write(
-                    ",".join(
-                        (img_id, str(min_x), str(min_y), str(max_x), str(max_y), "\n")
+        if not args.no_rois:
+            img_id = extract_nums_only(fname)
+            for c in (c0, c1, c2, c3, c4, c5, c6):
+                try:
+                    min_x = np.min(c[:, 1])
+                except ValueError:
+                    min_x = None
+                try:
+                    min_y = np.min(c[:, 0])
+                except ValueError:
+                    min_y = None
+                try:
+                    max_x = np.max(c[:, 1])
+                except ValueError:
+                    max_x = None
+                try:
+                    max_y = np.max(c[:, 0])
+                except ValueError:
+                    max_y = None
+                # write out the stuff
+                with open(rois_file, "a") as f:
+                    f.write(
+                        ",".join(
+                            (img_id, str(min_x), str(min_y), str(max_x), str(max_y), "\n")
+                        )
                     )
-                )
 
         # Save an image of the mask for our own reference every 1000 steps
-        if step % args.visualize_step == 0:
+        if not args.no_vis and step % args.visualize_step == 0:
             preds = np.expand_dims(raw_output_up_, axis=3)
             msk = decode_labels(preds, num_classes=args.num_classes)
             # the mask
